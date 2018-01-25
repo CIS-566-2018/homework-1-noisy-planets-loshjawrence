@@ -17,7 +17,7 @@ const controls = {
   red:255,
   green:255,
   blue:255,
-  woahDude: false,
+  noise: false,
 };
 
 let icosphere: Icosphere;
@@ -49,7 +49,7 @@ function main() {
   gui.add(controls, 'red', 0, 255).step(1);
   gui.add(controls, 'green', 0, 255).step(1);
   gui.add(controls, 'blue', 0, 255).step(1);
-  gui.add(controls, 'woahDude');
+  gui.add(controls, 'noise');
 
   // get canvas and webgl context
   const canvas = <HTMLCanvasElement> document.getElementById('canvas');
@@ -64,7 +64,7 @@ function main() {
   // Initial call to load scene
   loadScene();
 
-  const camera = new Camera(vec3.fromValues(1, 1, 1), vec3.fromValues(0, 0, 0));
+  const camera = new Camera(vec3.fromValues(3, 3, 3), vec3.fromValues(0, 0, 0));
 
   const renderer = new OpenGLRenderer(canvas);
   renderer.setClearColor(0.2, 0.2, 0.2, 1);
@@ -74,9 +74,9 @@ function main() {
     new Shader(gl.VERTEX_SHADER, require('./shaders/lambert-vert.glsl')),
     new Shader(gl.FRAGMENT_SHADER, require('./shaders/lambert-frag.glsl')),
   ]);
-  const woahDude = new ShaderProgram([
-    new Shader(gl.VERTEX_SHADER, require('./shaders/woahDude-vert.glsl')),
-    new Shader(gl.FRAGMENT_SHADER, require('./shaders/woahDude-frag.glsl')),
+  const noise = new ShaderProgram([
+    new Shader(gl.VERTEX_SHADER, require('./shaders/noise-vert.glsl')),
+    new Shader(gl.FRAGMENT_SHADER, require('./shaders/noise-frag.glsl')),
   ]);
 
   // This function will be called every frame
@@ -86,11 +86,11 @@ function main() {
     gl.viewport(0, 0, window.innerWidth, window.innerHeight);
     renderer.clear();
     const toFloat = 1.0/255.0;
-    const shaderPointer = controls.woahDude ? woahDude : lambert;
+    const shaderPointer = controls.noise ? noise : lambert;
     renderer.render(camera, shaderPointer, vec4.fromValues(controls.red * toFloat, controls.green * toFloat, controls.blue * toFloat, 1.0), [
       icosphere,
       // square,
-      cube,
+      // cube,
     ]);
     stats.end();
 
