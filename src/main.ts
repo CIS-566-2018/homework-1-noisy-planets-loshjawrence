@@ -12,12 +12,19 @@ import ShaderProgram, {Shader} from './rendering/gl/ShaderProgram';
 // Define an object with application parameters and button callbacks
 // This will be referred to by dat.GUI's functions that add GUI elements.
 const controls = {
-  tesselations: 5,
+  tesselations: 4,
   'Load Scene': loadScene, // A function pointer, essentially
   red:255,
   green:255,
   blue:255,
-  noise: false,
+  Use4D: false,
+  color0: [0, 128, 255],
+};
+var FizzyText = function() {
+  this.color0 = "#ffae23"; // CSS string
+  this.color1 = [ 0, 128, 255 ]; // RGB array
+  this.color2 = [ 0, 128, 255, 0.3 ]; // RGB with alpha
+  this.color3 = { h: 350, s: 0.9, v: 0.3 }; // Hue, saturation, value
 };
 
 let icosphere: Icosphere;
@@ -43,13 +50,18 @@ function main() {
   document.body.appendChild(stats.domElement);
 
   // Add controls to the gui
-  const gui = new DAT.GUI();
+  // var textColor = new FizzyText();
+  var gui = new DAT.GUI();
   gui.add(controls, 'tesselations', 0, 8).step(1);
   gui.add(controls, 'Load Scene');
   gui.add(controls, 'red', 0, 255).step(1);
   gui.add(controls, 'green', 0, 255).step(1);
   gui.add(controls, 'blue', 0, 255).step(1);
-  gui.add(controls, 'noise');
+  gui.add(controls, 'Use4D');
+  // gui.addColor(controls.color0, 'color0');
+  // gui.addColor(textColor, 'color1');
+  // gui.addColor(textColor, 'color2');
+  // gui.addColor(textColor, 'color3');
 
   // get canvas and webgl context
   const canvas = <HTMLCanvasElement> document.getElementById('canvas');
@@ -86,8 +98,9 @@ function main() {
     gl.viewport(0, 0, window.innerWidth, window.innerHeight);
     renderer.clear();
     const toFloat = 1.0/255.0;
-    const shaderPointer = controls.noise ? noise : lambert;
-    renderer.render(camera, shaderPointer, vec4.fromValues(controls.red * toFloat, controls.green * toFloat, controls.blue * toFloat, 1.0), [
+    //const shaderPointer = controls.noise ? noise : lambert;
+    const intuse4d = controls.Use4D === true ? 1 : 0;
+    renderer.render(camera, noise, intuse4d, vec4.fromValues(controls.red * toFloat, controls.green * toFloat, controls.blue * toFloat, 1.0), [
       icosphere,
       // square,
       // cube,

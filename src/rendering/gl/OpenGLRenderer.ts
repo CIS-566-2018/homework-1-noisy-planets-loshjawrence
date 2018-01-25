@@ -22,7 +22,7 @@ class OpenGLRenderer {
     gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
   }
 
-  render(camera: Camera, prog: ShaderProgram, color: vec4, drawables: Array<Drawable>) {
+  render(camera: Camera, prog: ShaderProgram, use4D: number, color: vec4, drawables: Array<Drawable>) {
     let model = mat4.create();
     let viewProj = mat4.create();
 
@@ -31,6 +31,7 @@ class OpenGLRenderer {
     prog.setModelMatrix(model);
     prog.setViewProjMatrix(viewProj);
     prog.setGeometryColor(color);
+    prog.setUse4D(use4D);
     prog.setTime();
 
 
