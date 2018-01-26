@@ -14,9 +14,9 @@ import ShaderProgram, {Shader} from './rendering/gl/ShaderProgram';
 const controls = {
   tesselations: 4,
   'Load Scene': loadScene, // A function pointer, essentially
-  red:255,
-  green:255,
-  blue:255,
+  //red:255,
+  //green:255,
+  //blue:255,
   Use4D: false,
   color0: [0, 128, 255],
 };
@@ -54,9 +54,9 @@ function main() {
   var gui = new DAT.GUI();
   gui.add(controls, 'tesselations', 0, 8).step(1);
   gui.add(controls, 'Load Scene');
-  gui.add(controls, 'red', 0, 255).step(1);
-  gui.add(controls, 'green', 0, 255).step(1);
-  gui.add(controls, 'blue', 0, 255).step(1);
+  //gui.add(controls, 'red', 0, 255).step(1);
+  //gui.add(controls, 'green', 0, 255).step(1);
+  //gui.add(controls, 'blue', 0, 255).step(1);
   gui.add(controls, 'Use4D');
   // gui.addColor(controls.color0, 'color0');
   // gui.addColor(textColor, 'color1');
@@ -100,7 +100,7 @@ function main() {
     const toFloat = 1.0/255.0;
     //const shaderPointer = controls.noise ? noise : lambert;
     const intuse4d = controls.Use4D === true ? 1 : 0;
-    renderer.render(camera, noise, intuse4d, vec4.fromValues(controls.red * toFloat, controls.green * toFloat, controls.blue * toFloat, 1.0), [
+    renderer.render(camera, noise, intuse4d, vec4.fromValues(1.0, 1.0, 1.0, 1.0), [
       icosphere,
       // square,
       // cube,

@@ -29,6 +29,7 @@ in vec4 vs_Nor;             // The array of vertex normals passed to the shader
 in vec4 vs_Col;             // The array of vertex colors passed to the shader.
 
 out vec4 fs_Nor;            // The array of normals that has been transformed by u_ModelInvTr. This is implicitly passed to the fragment shader.
+out vec4 fs_NorGeom;        // geometry normal
 out vec4 fs_LightVec;       // The direction in which our virtual light lies, relative to each vertex. This is implicitly passed to the fragment shader.
 out vec4 fs_Col;            // The color of each vertex. This is implicitly passed to the fragment shader.
 
@@ -458,27 +459,61 @@ vec4(0.90f, 0.90f, 0.98f, 1.00f)  //ice
    
 void main()
 {
-    //fs_Col = vs_Col;                         // Pass the vertex colors to the fragment shader for interpolation
-
     mat3 invTranspose = mat3(u_ModelInvTr);
-    fs_Nor = vec4(invTranspose * vec3(vs_Nor), 0);          // Pass the vertex normals to the fragment shader for interpolation.
-                                                            // Transform the geometry's normals by the inverse transpose of the
-                                                            // model matrix. This is necessary to ensure the normals remain
-                                                            // perpendicular to the surface after the surface is transformed by
-                                                            // the model matrix.
+    vec3 vs_Nor3 = vec3(vs_Nor);
+    vec3 tan = cross(vs_Nor3, vec3(0.f, 1.f, 0.f));
+    tan = length(tan) < 0.01f ? cross(vs_Nor3, vec3(0.f, 0.f, -1.f)) : tan;
+    tan = normalize(tan);
+    vec3 bitan = normalize(cross(vs_Nor3, tan));
+    mat3 tanToModel = mat3(tan, bitan, vs_Nor3);
 
     //displace vs_Pos according to noise value
     vec3 vs_Pos3 = vec3(vs_Pos);
-    //float perlin = -PerlinNoise3D(vs_Pos3*1.f);
-    float perlin = u_Use4D == 1 ? -PerlinNoise4D(vec4(vs_Pos3, u_Time)*1.f) : -PerlinNoise3D(vs_Pos3*1.f);
+    float scale = 1.0f;
+    float perlin = u_Use4D == 1 ? -PerlinNoise4D(vec4(vs_Pos3, u_Time)*scale) : -PerlinNoise3D(vs_Pos3*scale);
 
-    float mapVal = (0.5f*(perlin+1.f)-0.01f);
+    //calculate the gradient on the surface to get the shading normal
+    float e = 0.00001f;
+    vec3 vs_Pos3XL = vs_Pos3 - vec3(e, 0.f, 0.f);
+    vec3 vs_Pos3YL = vs_Pos3 - vec3(0.f, e, 0.f);
+    vec3 vs_Pos3ZL = vs_Pos3 - vec3(0.f, 0.f, e);
+    float perlinXL = u_Use4D == 1 ? -PerlinNoise4D(vec4(vs_Pos3XL, u_Time)*scale) : -PerlinNoise3D(vs_Pos3XL*scale);
+    float perlinYL = u_Use4D == 1 ? -PerlinNoise4D(vec4(vs_Pos3YL, u_Time)*scale) : -PerlinNoise3D(vs_Pos3YL*scale);
+    float perlinZL = u_Use4D == 1 ? -PerlinNoise4D(vec4(vs_Pos3ZL, u_Time)*scale) : -PerlinNoise3D(vs_Pos3ZL*scale);
+    vec3 vs_Pos3XR = vs_Pos3 + vec3(e, 0.f, 0.f);
+    vec3 vs_Pos3YR = vs_Pos3 + vec3(0.f, e, 0.f);
+    vec3 vs_Pos3ZR = vs_Pos3 + vec3(0.f, 0.f, e);
+    float perlinXR = u_Use4D == 1 ? -PerlinNoise4D(vec4(vs_Pos3XR, u_Time)*scale) : -PerlinNoise3D(vs_Pos3XR*scale);
+    float perlinYR = u_Use4D == 1 ? -PerlinNoise4D(vec4(vs_Pos3YR, u_Time)*scale) : -PerlinNoise3D(vs_Pos3YR*scale);
+    float perlinZR = u_Use4D == 1 ? -PerlinNoise4D(vec4(vs_Pos3ZR, u_Time)*scale) : -PerlinNoise3D(vs_Pos3ZR*scale);
+
+    float dampen = 1.f/2.f;
+    float landOffsetXL = clamp(dampen*perlinXL, 0.f, 1.f);
+    float landOffsetYL = clamp(dampen*perlinYL, 0.f, 1.f);
+    float landOffsetZL = clamp(dampen*perlinZL, 0.f, 1.f);
+    float landOffsetXR = clamp(dampen*perlinXR, 0.f, 1.f);
+    float landOffsetYR = clamp(dampen*perlinYR, 0.f, 1.f);
+    float landOffsetZR = clamp(dampen*perlinZR, 0.f, 1.f);
+    vec3 dF = vec3(landOffsetXL-landOffsetXR, landOffsetYL-landOffsetYR, landOffsetZL-landOffsetZR) * (1.f/e);
+    dF = normalize(tanToModel * dF);
+    
+
+    vec3 shadeNor3 = normalize(vs_Nor3-dF);
+    //fs_Nor = vec4(invTranspose*shadeNor3, 0.f);       
+    //fs_Nor = vec4(invTranspose*dF, 0.f);       
+    fs_Nor = vec4(invTranspose * vs_Nor3, 0.f);       
+    fs_NorGeom = vec4(invTranspose * vs_Nor3, 0.f);       
+
+
+                                                  
+
     int index = int(6.f*(0.5f*(perlin+1.f)-0.01f));
     fs_Col = theColors[index];
+    //float mapVal = (0.5f*(perlinZ+1.f)-0.01f);
     //fs_Col = vec4(mapVal, mapVal, mapVal, 1.f);
 
-    float landOffset = clamp((1.f/2.f)*perlin, 0.f, 1.f);
-    vec3 offset = landOffset*vec3(vs_Nor);
+    float landOffset = clamp(dampen*perlin, 0.f, 1.f);
+    vec3 offset = landOffset*vs_Nor3;
     vec4 newPos = vec4(vs_Pos3 + offset, 1.f);
 
     //vec4 modelposition = u_Model * vs_Pos;   // Temporarily store the transformed vertex positions for use below
