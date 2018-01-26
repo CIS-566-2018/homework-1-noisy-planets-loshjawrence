@@ -1,5 +1,14 @@
 # CIS 566 Project 1: Noisy Planets
 
+# Pennkey
+- joshphil
+- resources: followed the scratchapixel series on noise and perlin noise
+- just uses perlin noise for offset and color picking
+- EC: 4D perlin
+![](img/Untitled.png)
+
+
+
 ## Objective
 - Continue practicing WebGL and Typescript
 - Experiment with noise functions to procedurally generate the surface of a planet
