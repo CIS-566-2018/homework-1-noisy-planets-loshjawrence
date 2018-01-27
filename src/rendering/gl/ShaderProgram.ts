@@ -1,4 +1,4 @@
-import {vec4, mat4} from 'gl-matrix';
+import {vec3, vec4, mat4} from 'gl-matrix';
 import Drawable from './Drawable';
 import {gl} from '../../globals';
 
@@ -28,9 +28,11 @@ class ShaderProgram {
   unifModel: WebGLUniformLocation;
   unifModelInvTr: WebGLUniformLocation;
   unifViewProj: WebGLUniformLocation;
+  unifCamToWorld: WebGLUniformLocation;
   unifColor: WebGLUniformLocation;
   unifTime: WebGLUniformLocation;
   unifUse4D: WebGLUniformLocation;
+  unifCamPos: WebGLUniformLocation;
 
   constructor(shaders: Array<Shader>) {
     this.prog = gl.createProgram();
@@ -49,9 +51,11 @@ class ShaderProgram {
     this.unifModel      = gl.getUniformLocation(this.prog, "u_Model");
     this.unifModelInvTr = gl.getUniformLocation(this.prog, "u_ModelInvTr");
     this.unifViewProj   = gl.getUniformLocation(this.prog, "u_ViewProj");
+    this.unifCamToWorld   = gl.getUniformLocation(this.prog, "u_CamToWorld");
     this.unifColor      = gl.getUniformLocation(this.prog, "u_Color");
     this.unifTime       = gl.getUniformLocation(this.prog, "u_Time");
     this.unifUse4D         = gl.getUniformLocation(this.prog, "u_Use4D");
+    this.unifCamPos         = gl.getUniformLocation(this.prog, "u_CamPos");
   }
 
   use() {
@@ -81,6 +85,12 @@ class ShaderProgram {
       gl.uniformMatrix4fv(this.unifViewProj, false, vp);
     }
   }
+  setCamToWorldMatrix(camToWorld: mat4) {
+    this.use();
+    if (this.unifCamToWorld !== -1) {
+      gl.uniformMatrix4fv(this.unifCamToWorld, false, camToWorld);
+    }
+  }
 
   setGeometryColor(color: vec4) {
     this.use();
@@ -94,6 +104,12 @@ class ShaderProgram {
     if (this.unifTime !== -1) {
       const timeWarp = 2.0;
       gl.uniform1f(this.unifTime, performance.now() * (1.0 / (1000.0 * timeWarp)));
+    }
+  }
+  setCamPos(camPos: vec4) {
+    this.use();
+    if (this.unifCamPos !== -1) {
+      gl.uniform3fv(this.unifCamPos, camPos);
     }
   }
   setUse4D(use4D: number) {

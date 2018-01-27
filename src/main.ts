@@ -12,7 +12,8 @@ import ShaderProgram, {Shader} from './rendering/gl/ShaderProgram';
 // Define an object with application parameters and button callbacks
 // This will be referred to by dat.GUI's functions that add GUI elements.
 const controls = {
-  tesselations: 4,
+
+  tesselations: 7,
   'Load Scene': loadScene, // A function pointer, essentially
   //red:255,
   //green:255,
@@ -20,6 +21,8 @@ const controls = {
   Use4D: false,
   color0: [0, 128, 255],
 };
+
+
 var FizzyText = function() {
   this.color0 = "#ffae23"; // CSS string
   this.color1 = [ 0, 128, 255 ]; // RGB array
@@ -52,7 +55,7 @@ function main() {
   // Add controls to the gui
   // var textColor = new FizzyText();
   var gui = new DAT.GUI();
-  gui.add(controls, 'tesselations', 0, 8).step(1);
+  gui.add(controls, 'tesselations', 0, 10).step(1);
   gui.add(controls, 'Load Scene');
   //gui.add(controls, 'red', 0, 255).step(1);
   //gui.add(controls, 'green', 0, 255).step(1);
@@ -76,7 +79,7 @@ function main() {
   // Initial call to load scene
   loadScene();
 
-  const camera = new Camera(vec3.fromValues(3, 3, 3), vec3.fromValues(0, 0, 0));
+  const camera = new Camera(vec3.fromValues(2, 2, 2), vec3.fromValues(0, 0, 0));
 
   const renderer = new OpenGLRenderer(canvas);
   renderer.setClearColor(0.2, 0.2, 0.2, 1);

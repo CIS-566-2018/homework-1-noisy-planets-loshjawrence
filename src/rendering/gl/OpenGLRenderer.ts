@@ -25,12 +25,18 @@ class OpenGLRenderer {
   render(camera: Camera, prog: ShaderProgram, use4D: number, color: vec4, drawables: Array<Drawable>) {
     let model = mat4.create();
     let viewProj = mat4.create();
+    let camToWorld = mat4.create();
 
     mat4.identity(model);
     mat4.multiply(viewProj, camera.projectionMatrix, camera.viewMatrix);
+    mat4.invert(camToWorld, camera.viewMatrix);
     prog.setModelMatrix(model);
     prog.setViewProjMatrix(viewProj);
+    prog.setCamToWorldMatrix(camToWorld);
     prog.setGeometryColor(color);
+    // prog.setCamPos(vec4.fromValues(camera.position[0], camera.position[1], camera.position[2], 1.0)); 
+    prog.setCamPos(vec4.fromValues(2, 2, 2, 1)); 
+    // prog.setCamPos(camera.position); 
     prog.setUse4D(use4D);
     prog.setTime();
 
